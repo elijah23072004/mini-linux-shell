@@ -79,7 +79,7 @@ int get_input(char* str){
     return 1;
 }
 
-int parse_input(str){
+int parse_input(char* str){
     return 0;
 }
 
