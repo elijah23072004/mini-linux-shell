@@ -109,12 +109,15 @@ int runCommand(char** arguments,int numberArguments){
                 strcat(input, " ");
                 strcat(input, arguments[i]); 
             }
-        
-            printf("%s\n",input);
+            printf("command: %s\n",arguments[0]); 
+            printf("arguments: %s\n",input);
             execlp(arguments[0], arguments[0], input, NULL);
         }
         printf("after execlp did not find command\n");
         
+        execl(arguments[0], arguments[0], input,NULL);
+
+
         exit(0);
     }
     return 0;
@@ -143,7 +146,54 @@ int handleArguments(char** arguments, int numberArguments){
     return 0;
 }
 
+char* parse_wildCards(char* input){
+    int i =0;
+    char prev = ' ';
+    char* text = input;
+    while(1){
+        if(i > strlen(text)){
+            return text;;
+        } 
+        if(text[i] == '~'){
+            if(prev == ' ')
+            {
+                if(i == (strlen(text)-1) || text[i+1] == '/'){
+                    char* home_Dir = get_home_dir();
+                    //printf("input: %s\n",text);
+                    //printf("%s\n",home_Dir);
+                    int newLen = strlen(text) + strlen(home_Dir);
+                    char* temp = (char*)malloc(newLen* sizeof(char));
+                   // printf("%s\n",temp);
+                    memcpy(temp, text, i);
+                    //printf("after first memcpy: %s\n",temp);
+                    memcpy(temp+i,home_Dir , sizeof(home_Dir)+1);
+                    memcpy(temp+i+sizeof(home_Dir)+1,text+i+1,strlen(input)-i);
+                    text=temp;
+                    //printf("output: %s\n",text);
+
+                    i+=strlen(home_Dir);
+                    if(i>strlen(text)){
+                        return text;
+                    }
+                    ///printf("i: %d\n",i);
+                    //printf("%c\n", text[i]);
+                }
+            }
+        }
+        else if(text[i] == '*'){
+        }
+        else if(text[i] == '\\'){
+        }
+        prev = text[i];
+        i++;
+
+    }
+    
+}
+
 int parse_input(char* input){
+    input = parse_wildCards(input);
+    printf("%s\n",input);
     char* token;
     const char delimiter[4] = " ";
     token = strtok(input, delimiter);
