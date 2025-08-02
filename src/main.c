@@ -85,8 +85,39 @@ int changeDirectory(char** arguments, int numberArguments){
     return 0;
 }
 
-int ls(){
-   system("ls"); 
+
+int runCommand(char** arguments,int numberArguments){
+    pid_t p = fork();
+    if(p <0){
+        printf("fork failed\n");
+    }
+    else if( p>0){
+        printf("Parent process\n");
+        wait(NULL);
+        printf("Child process finished\n");
+
+    }
+    else{
+        printf("Child process\n");
+        char input[100];
+        if(numberArguments == 1){
+            execlp(arguments[0], arguments[0], NULL);
+        }
+        else{
+            strcpy(input,arguments[1]);
+            for(int i=2; i<numberArguments;i++){
+                strcat(input, " ");
+                strcat(input, arguments[i]); 
+            }
+        
+            printf("%s\n",input);
+            execlp(arguments[0], arguments[0], input, NULL);
+        }
+        printf("after execlp did not find command\n");
+        
+        exit(0);
+    }
+    return 0;
 }
 
 int handleArguments(char** arguments, int numberArguments){
@@ -94,13 +125,19 @@ int handleArguments(char** arguments, int numberArguments){
     char* shellCommands[1];
     shellCommands[0]= "cd";
     if(strcmp(arguments[0], shellCommands[0]) == 0 ){
-        changeDirectory(arguments+1,numberArguments-1);
+        return changeDirectory(arguments+1,numberArguments-1);
     }
-    else if(strcmp(arguments[0],"ls") == 0){
-        ls();
+    else if(strcmp(arguments[0],"clear") == 0){
+        clear();
+        return 0;
+    }
+    else if(strcmp(arguments[0],"exit")==0){
+        exit(0);
     }
     else{
-        printf("did not find command");
+        printf("did not find command searching path locations\n");
+
+        return runCommand(arguments, numberArguments);
     }
 
     return 0;
@@ -114,12 +151,12 @@ int parse_input(char* input){
     int size = 20;
     char** arguments = (char**)malloc(size * sizeof(char*));
     while(token != 0){
-        printf(" %s\n",token);
+        //printf(" %s\n",token);
         if(numberArguments+1>=size){
             size=size*1.5;
             char** tmp=arguments; 
             arguments = (char**)realloc(tmp, size*sizeof(char*));
-            printf("reallocated new size:%d\n",size);
+            //printf("reallocated new size:%d\n",size);
         }
         arguments[numberArguments] = token;
         numberArguments++;
@@ -127,10 +164,10 @@ int parse_input(char* input){
         token= strtok(0, delimiter);
     }
 
-    for(int j=0; j<numberArguments;j++){
+    /*for(int j=0; j<numberArguments;j++){
         printf("%s,",arguments[j]);
     }
-    printf("\n");
+    */printf("\n");
 
 
     //logic for handling input
