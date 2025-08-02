@@ -92,13 +92,13 @@ int runCommand(char** arguments,int numberArguments){
         printf("fork failed\n");
     }
     else if( p>0){
-        printf("Parent process\n");
+        //printf("Parent process\n");
         wait(NULL);
-        printf("Child process finished\n");
+        //printf("Child process finished\n");
 
     }
     else{
-        printf("Child process\n");
+        //printf("Child process\n");
         char input[100];
         if(numberArguments == 1){
             execlp(arguments[0], arguments[0], NULL);
@@ -111,14 +111,18 @@ int runCommand(char** arguments,int numberArguments){
             }
             printf("command: %s\n",arguments[0]); 
             printf("arguments: %s\n",input);
-            execlp(arguments[0], arguments[0], input, NULL);
+            char *args[numberArguments+1];
+            memcpy(args,arguments, numberArguments*sizeof(char**));
+            args[numberArguments]=NULL;
+            printf("%s\n",args[0]);
+            execvp(args[0],args);
         }
-        printf("after execlp did not find command\n");
+        printf("execvp did not find command\n");
         
-        execl(arguments[0], arguments[0], input,NULL);
+        //execl(arguments[0], arguments[0], input,NULL);
 
 
-        exit(0);
+        exit(1);
     }
     return 0;
 }
@@ -138,7 +142,7 @@ int handleArguments(char** arguments, int numberArguments){
         exit(0);
     }
     else{
-        printf("did not find command searching path locations\n");
+        //printf("did not find command searching path locations\n");
 
         return runCommand(arguments, numberArguments);
     }
@@ -183,6 +187,8 @@ char* parse_wildCards(char* input){
         else if(text[i] == '*'){
         }
         else if(text[i] == '\\'){
+            //currently not implementing until find solution for \ + space
+            //all but "\ " can be processed here \ + space needs to be parsed after 
         }
         prev = text[i];
         i++;
